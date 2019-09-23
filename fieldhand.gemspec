@@ -14,6 +14,7 @@ Gem::Specification.new do |s|
 
   s.add_dependency('ox', '~> 2.5')
   s.add_development_dependency('rspec', '~> 3.6')
+  s.add_development_dependency('pry-byebug', '~> 3.6')
   s.add_development_dependency('webmock', '~> 1.21', '< 1.22')
   s.add_development_dependency('addressable', '~> 2.3', '< 2.4')
 end

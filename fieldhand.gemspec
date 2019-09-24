@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = 'fieldhand'
-  s.version = '0.11.0'
+  s.version = '0.12.0'
   s.summary = 'An OAI-PMH harvester'
   s.description = <<-EOF
     A library to harvest metadata from OAI-PMH repositories.
@@ -14,6 +14,7 @@ Gem::Specification.new do |s|
 
   s.add_dependency('ox', '~> 2.5')
   s.add_development_dependency('rspec', '~> 3.6')
+  s.add_development_dependency('pry-byebug', '~> 3.6')
   s.add_development_dependency('webmock', '~> 1.21', '< 1.22')
   s.add_development_dependency('addressable', '~> 2.3', '< 2.4')
 end

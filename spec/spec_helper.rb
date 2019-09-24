@@ -6,8 +6,6 @@ FIXTURE_DIR = File.expand_path('../fixtures', __FILE__).freeze
 
 FIXTURE_DIR = File.expand_path('../fixtures', __FILE__).freeze
 
-FIXTURE_DIR = File.expand_path('../fixtures', __FILE__).freeze
-
 RSpec.configure do |config|
   config.shared_context_metadata_behavior = :apply_to_host_groups
   config.filter_run_when_matching :focus

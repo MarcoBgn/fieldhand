@@ -2,6 +2,8 @@ require 'date'
 require 'webmock/rspec'
 require 'pry-byebug'
 
+FIXTURE_DIR = File.expand_path('../fixtures', __FILE__).freeze
+
 RSpec.configure do |config|
   config.shared_context_metadata_behavior = :apply_to_host_groups
   config.filter_run_when_matching :focus
@@ -22,9 +24,7 @@ RSpec.configure do |config|
   end
 
   def stub_oai_request(uri, fixture)
-    fixtures_dir = File.expand_path('../fixtures', __FILE__)
-
     stub_request(:get, uri).
-      to_return(:body => File.read(File.join(fixtures_dir, fixture)))
+      to_return(:body => File.read(File.join(FIXTURE_DIR, fixture)))
   end
 end

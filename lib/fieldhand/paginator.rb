@@ -12,6 +12,8 @@ module Fieldhand
   # See https://www.openarchives.org/OAI/openarchivesprotocol.html#FlowControl
   class Paginator
     attr_reader :uri, :logger, :timeout, :retries, :interval, :headers, :http
+    attr_writer :retries
+    private :retries=
 
     # Return a new paginator for the given repository base URI and optional logger, timeout, retries, interval, bearer token and headers.
     #
@@ -96,7 +98,7 @@ module Fieldhand
 
       response
     rescue ResponseError => e
-      raise e unless self.retries.positive?
+      raise e unless retries > 0
       self.retries -= 1
 
       sleep(interval)

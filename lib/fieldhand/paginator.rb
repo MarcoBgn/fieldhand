@@ -96,7 +96,7 @@ module Fieldhand
 
       response
     rescue ResponseError => e
-      raise e unless self.retries.positive?
+      raise e unless self.retries > 0
       self.retries -= 1
 
       sleep(interval)

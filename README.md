@@ -125,7 +125,7 @@ something that can be coerced into a `URI` such as a `String`) with options pass
 
 * `:logger`: a [`Logger`](http://ruby-doc.org/stdlib/libdoc/logger/rdoc/Logger.html)-compatible `logger`, defaults to a platform-specific null logger;
 * `:timeout`: a `Numeric` number of seconds to wait before timing out any HTTP requests, defaults to 60;
-* `:retries`: a `Numeric` number of times an HTTP request will be retried before raising an error, defaults to 0;
+* `:retries`: a `Numeric` maximum number of times an HTTP request will be retried before raising an error, defaults to 0;
 * `:interval`: a `Numeric` number of seconds to wait before the next retry attempt, defaults to 10;
 * `:bearer_token`: a `String` bearer token to authorize any HTTP requests, defaults to `nil`.
 * `:headers`: a `Hash` containing custom HTTP headers, defaults to `{}`.

@@ -17,19 +17,20 @@ module Fieldhand
   class Repository
     attr_reader :uri, :logger_or_options
 
+    # For backward compatibility, expose the optional logger, timeout and headers passed to the Paginator.
     extend Forwardable
     def_delegators :paginator, :logger, :timeout, :headers
 
-    # Return a new repository with the given base URL and an optional logger, timeout, bearer token and headers.
+    # Return a new repository with the given base URL and an optional logger, timeout, bearer token, headers, maximum
+    # number of retries and retry interval.
     #
     # The base URL can be passed as a `URI` or anything that can be parsed as a URI such as a string.
     #
-    # The retries and interval options are passed to the Paginator class.
+    # For backward compatibility, the second argument can either be a logger or a hash containing a logger, timeout,
+    # bearer token, headers, maximum number of retries and retry interval.
     #
-    # For backward compatibility, the second argument can either be a logger or a hash containing
-    # a logger, timeout, retries, interval, bearer token and headers. Method calls are delgated to Paginator
-    #
-    # Defaults to using a null logger specific to this platform, a timeout of 60 seconds, no bearer token and no headers.
+    # Defaults to using a null logger specific to this platform, a timeout of 60 seconds, no bearer token, no headers, a
+    # retry limit of 0 and a retry interval of 10 seconds.
     def initialize(uri, logger_or_options = {})
       @uri = uri.is_a?(::URI) ? uri : URI(uri)
 

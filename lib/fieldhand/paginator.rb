@@ -1,7 +1,7 @@
-require 'fieldhand/network_errors'
 require 'fieldhand/options'
+require 'fieldhand/requester'
 require 'fieldhand/response_parser'
-require 'cgi'
+require 'forwardable'
 require 'net/http'
 require 'uri'
 
@@ -11,30 +11,27 @@ module Fieldhand
   #
   # See https://www.openarchives.org/OAI/openarchivesprotocol.html#FlowControl
   class Paginator
-    attr_reader :uri, :logger, :timeout, :retries, :interval, :headers, :http
-    attr_writer :retries
+    attr_reader :uri, :http, :options
 
-    # Return a new paginator for the given repository base URI and optional logger, timeout, retries, interval, bearer token and headers.
+    extend Forwardable
+    def_delegators :options, :logger, :timeout, :headers, :retries, :interval
+
+    # Return a new paginator for the given repository base URI and optional logger, timeout, maximum number of retries,
+    # retry interval, bearer token and headers.
     #
     # The URI can be passed as either a `URI` or something that can be parsed as a URI such as a string.
     #
-    # The logger will default to a null logger appropriate to this platform, timeout will default to 60 seconds, 
-    # retries will default to 0, the sleep interval will default to 10 seconds, the bearer token will default
+    # The logger will default to a null logger appropriate to this platform, timeout will default to 60 seconds, maximum
+    # number of retries will default to 0, the retry interval will default to 10 seconds, the bearer token will default
     # to nil and headers will default to empty hash.
     def initialize(uri, logger_or_options = {})
       @uri = uri.is_a?(::URI) ? uri : URI(uri)
 
-      options = Options.new(logger_or_options)
-
-      @logger = options.logger
-      @timeout = options.timeout
-      @retries = options.retries
-      @interval = options.interval
-      @headers = options.headers
+      @options = Options.new(logger_or_options)
 
       @http = ::Net::HTTP.new(@uri.host, @uri.port)
-      @http.read_timeout = @timeout
-      @http.open_timeout = @timeout
+      @http.read_timeout = @options.timeout
+      @http.open_timeout = @options.timeout
       @http.use_ssl = true if @uri.scheme == 'https'
     end
 
@@ -80,7 +77,7 @@ module Fieldhand
     private
 
     def parse_response(query = {})
-      response = retryable_request(query)
+      response = requester.request(query)
       response_parser = ResponseParser.new(response.body)
       response_parser.errors.each do |error|
         raise error
@@ -89,42 +86,8 @@ module Fieldhand
       response_parser
     end
 
-    def retryable_request(query)
-      response = request(query)
-      raise ResponseError, response unless response.is_a?(::Net::HTTPSuccess)
-
-      response
-    rescue ResponseError => e
-      raise e unless retries > 0
-      self.retries -= 1
-
-      sleep(interval)
-      retry
-    end
-
-    def request(query = {})
-      request_uri = uri.dup
-      request_uri.query = encode_query(query)
-
-      logger.info('Fieldhand') { "GET #{request_uri}" }
-      http.request(authenticated_request(request_uri.request_uri))
-    rescue ::Timeout::Error => e
-      raise NetworkError, "timeout requesting #{query}: #{e}"
-    rescue => e
-      raise NetworkError, "error requesting #{query}: #{e}"
-    end
-
-    def encode_query(query = {})
-      query.map { |k, v| ::CGI.escape(k) << '=' << ::CGI.escape(v) }.join('&')
-    end
-
-    def authenticated_request(uri)
-      request = ::Net::HTTP::Get.new(uri)
-      headers.each do |key, value|
-        request[key] = value
-      end
-
-      request
+    def requester
+      Requester.new(http, uri, :logger => logger, :headers => headers, :retries => retries, :interval => interval)
     end
   end
 end

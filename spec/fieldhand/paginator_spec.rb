@@ -85,7 +85,7 @@ module Fieldhand
           to raise_error(NoSetHierarchyError)
       end
 
-      it 'retries unsuccessful responses' do
+      it 'retries unsuccessful responses when maximum number of retries is set' do
         stub_request(:get, 'http://www.example.com/oai?verb=Identify').
           to_return(
             { :status => 503, :body => 'Retry after 5 seconds' },
@@ -93,7 +93,21 @@ module Fieldhand
             { :status => 200, :body => File.read(File.join(FIXTURE_DIR, 'list_identifiers.xml')) }
           )
         
-          paginator = described_class.new('http://www.example.com/oai', :retries => 3, :interval => 0.1)
+        paginator = described_class.new('http://www.example.com/oai', :retries => 3, :interval => 0)
+
+        expect { paginator.items('Identify', IdentifyParser).first }.
+          not_to raise_error
+      end
+
+      it 'retries multiple requests when maximum number of retries is set' do
+        error = { :status => 503, :body => 'Retry after 5 seconds' }
+        success = { :status => 200, :body => File.read(File.join(FIXTURE_DIR, 'list_identifiers.xml')) }
+
+        stub_request(:get, 'http://www.example.com/oai?verb=Identify').
+          to_return(error, success, error, success)
+
+        paginator = described_class.new('http://www.example.com/oai', :retries => 1, :interval => 0)
+        paginator.items('Identify', IdentifyParser).first
 
         expect { paginator.items('Identify', IdentifyParser).first }.
           not_to raise_error
@@ -102,7 +116,7 @@ module Fieldhand
       it 'raises a Response Error if an unsuccessful response is returned after the last retry attempt' do
         stub_request(:get, 'http://www.example.com/oai?verb=Identify').
           to_return(:status => 503, :body => 'Retry after 5 seconds')
-        paginator = described_class.new('http://www.example.com/oai', :retries => 2, :interval => 0.1)
+        paginator = described_class.new('http://www.example.com/oai', :retries => 2, :interval => 0)
 
         expect { paginator.items('Identify', IdentifyParser).first }.
           to raise_error(ResponseError)

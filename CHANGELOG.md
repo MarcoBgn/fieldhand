@@ -4,7 +4,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [0.12.0] - 2019-09-24
 ### Added
-- Added option to Repository for setting up configurable retries
+- Added options to Repository for retrying failed network requests with a given retry interval.
 
 ## [0.11.0] - 2018-11-12
 ### Added
